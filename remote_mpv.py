@@ -79,13 +79,12 @@ class CmdRun(Route):
             handler.json_error(HTTPStatus.BAD_REQUEST, "Command '{}' is not allowed".format(cmdname))
             return
         mpv = handler.server.mpv
-        cmd = getattr(mpv, cmdname)
         args = inp_obj["args"]
         try:
-            resp = cmd(*args)
-            handler.json_success(resp)
+            resp = mpv.command("osd-msg-bar", cmdname, *args)
         except (TimeoutError, MPVError) as e:
-            handler.json_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))
+            return handler.json_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))
+        handler.json_success(resp)
 
 class MpvRequestHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
