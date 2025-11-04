@@ -15,8 +15,8 @@ IPC_SOCKET = "mpvsocket"
 LISTEN = ("127.0.0.1", 7271)
 STATIC_ROOT = "static"
 
-ALLOWED_PROPERTIES = ["pause", "playlist"]
-ALLOWED_COMMANDS = ["playlist_next", "playlist_prev"]
+ALLOWED_PROPERTIES = ["pause", "playlist", "speed", "mute", "volume", "volume-max"]
+ALLOWED_COMMANDS = ["add", "playlist-play-index", "playlist_next", "playlist_prev", "seek", "set", "show_text", "multiply"]
 
 class Route:
     regex = None
