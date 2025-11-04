@@ -27,8 +27,8 @@ class Route:
     def match(self, path):
         return self.regex.fullmatch(path)
 
-    def path_getter_re(self, or_list):
-        return re.compile("/{}/({})/?".format(self.prefix, "|".join(or_list)))
+    def path_getter_re(self):
+        return re.compile("/{}/([^/]+)/?".format(self.prefix))
 
     def path_setter_re(self):
         return re.compile("/{}/?".format(self.prefix))
@@ -37,11 +37,16 @@ class PropGet(Route):
 
     def __init__(self):
         super().__init__("property")
-        self.regex = self.path_getter_re(ALLOWED_PROPERTIES)
+        self.regex = self.path_getter_re()
 
     def get(self, handler, prop):
+        if prop not in ALLOWED_PROPERTIES:
+            return handler.json_error(HTTPStatus.BAD_REQUEST, "Property '{}' is not allowed".format(prop))
         mpv = handler.server.mpv
-        val = getattr(mpv, prop)
+        try:
+            val = getattr(mpv, prop.replace("-", "_"))
+        except (TimeoutError, MPVError) as e:
+            return handler.json_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))
         result = {prop: val}
         handler.json_success(result)
 
@@ -55,13 +60,15 @@ class PropSet(Route):
         inp_obj = handler.decode_json_input()
         if inp_obj is None:
             return
-        propname = next(iter(inp_obj))
-        val = inp_obj[propname]
-        if propname not in ALLOWED_PROPERTIES:
-            handler.json_error(HTTPStatus.BAD_REQUEST, "Property '{}' is not allowed".format(propname))
-            return
+        prop = next(iter(inp_obj))
+        val = inp_obj[prop]
+        if prop not in ALLOWED_PROPERTIES:
+            return handler.json_error(HTTPStatus.BAD_REQUEST, "Property '{}' is not allowed".format(prop))
         mpv = handler.server.mpv
-        setattr(mpv, propname, val)
+        try:
+            setattr(mpv, prop.replace("-", "_"), val)
+        except (TimeoutError, MPVError) as e:
+            return handler.json_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))
         handler.json_success()
 
 class CmdRun(Route):
@@ -76,8 +83,7 @@ class CmdRun(Route):
             return
         cmdname = inp_obj["cmd"]
         if cmdname not in ALLOWED_COMMANDS:
-            handler.json_error(HTTPStatus.BAD_REQUEST, "Command '{}' is not allowed".format(cmdname))
-            return
+            return handler.json_error(HTTPStatus.BAD_REQUEST, "Command '{}' is not allowed".format(cmdname))
         mpv = handler.server.mpv
         args = inp_obj["args"]
         try:
