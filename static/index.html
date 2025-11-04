@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mpv</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <p>mpv control</p>
+
+    <div class="container-vertical">
+        <div class="container">
+            <button id="pause"><i class="fa-solid fa-pause"></i><i class="fa-solid fa-play"></i></button>
+
+            <button title="Playlist Previous" onclick="mpvCommand('playlist_prev')"><i class="fa-solid fa-chevron-left"></i></button>
+            <button title="Playlist Next" onclick="mpvCommand('playlist_next')"><i class="fa-solid fa-chevron-right"></i></button>
+
+            <button title="Volume -" onclick="mpvCommand('add', ['volume', -10])"><i class="fa-solid fa-volume-low"></i></button>
+            <button title="Volume +" onclick="mpvCommand('add', ['volume', 10])"><i class="fa-solid fa-volume-high"></i></button>
+        </div>
+
+        <div class="container">
+            <button title="Seek Backward" onclick=""><i class="fa-solid fa-backward"></i></button>
+            <button title="Seek Forward" onclick=""><i class="fa-solid fa-forward"></i></button>
+
+            <button title="Playback -" onclick="mpvCommand('multiply', ['speed', 1/1.1])"><i class="fa-solid fa-gauge-high fa-flip-horizontal"></i></button>
+            <button title="Playback +" onclick="mpvCommand('multiply', ['speed', 1.1])"><i class="fa-solid fa-gauge-high"></i></button>
+
+            <button id="mute"><i class="fa-solid fa-volume-xmark"></i></button>
+        </div>
+
+        <div class="container volume">
+            <i class="fa-solid fa-volume-xmark"></i>
+            <input id="volume" type="range"/>
+            <i class="fa-solid fa-volume-high"></i>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

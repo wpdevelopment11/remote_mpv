@@ -1,0 +1,66 @@
+#mute {
+    opacity: 0.4;
+}
+
+#mute.muted {
+    opacity: 1;
+}
+
+#pause i:nth-child(2) {
+    display: none;
+}
+
+#pause.paused i:first-child {
+    display: none;
+}
+
+#pause.paused i:nth-child(2) {
+    display: inline;
+}
+
+button, label {
+    font-size: 20px;
+}
+
+#playlist a {
+    font-family: sans-serif;
+}
+
+#playlist tr td:first-child {
+    text-align: right;
+}
+
+#playlist .playlist-current {
+    color: red;
+}
+
+.container {
+    display: flex;
+    margin: 10px 0;
+}
+
+.container > button {
+    margin-left: 10px;
+    flex: 1 40px;
+}
+
+.container > button:first-child {
+    margin-left: 0px;
+}
+
+
+#volume {
+    flex: 1;
+    margin: 0 5px;
+}
+
+.volume {
+    align-items: center;
+    font-size: 13px;
+}
+
+@media (min-width: 650px) {
+    .container-vertical {
+        max-width: 400px;
+    }
+}
