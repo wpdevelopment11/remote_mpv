@@ -91,7 +91,7 @@ async function setupSlider(name, getMax) {
     slider.max = await getMax();
     slider.value = await mpvGetProperty(name);
     slider.onchange = async () => {
-        await mpvCommand("set", [name, slider.value]);
+        await mpvSetProperty(name, slider.value);
     }
 }
 
