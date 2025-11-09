@@ -34,6 +34,7 @@ function showPlaylist(playlist) {
     const table = document.createElement("table");
     table.id = "playlist";
     let current = null;
+    let currentId = -1;
 
     function makeCurrent(link) {
         if (current) {
@@ -41,6 +42,33 @@ function showPlaylist(playlist) {
         }
         current = link;
         current.classList.add(currentClass);
+    }
+
+    const prev_button = document.getElementById("playlist-prev");
+    const next_button = document.getElementById("playlist-next");
+
+    prev_button.onclick = () => {
+        if (!current) {
+            return;
+        }
+
+        const len = playlist.length;
+        const links = table.querySelectorAll("a");
+        currentId = (currentId + len - 1) % len;
+        makeCurrent(links[currentId]);
+        mpvCommand("playlist-play-index", [currentId]);
+    }
+
+    next_button.onclick = () => {
+        if (!current) {
+            return;
+        }
+
+        const len = playlist.length;
+        const links = table.querySelectorAll("a");
+        currentId = (currentId + 1) % len;
+        makeCurrent(links[currentId]);
+        mpvCommand("playlist-play-index", [currentId]);
     }
 
     for (let i = 0; i < playlist.length; i++) {
@@ -56,14 +84,16 @@ function showPlaylist(playlist) {
         link.appendChild(document.createTextNode(title));
         link.href = "#";
         if (item.current) {
+            currentId = i;
             makeCurrent(link);
         }
 
         title_cell.appendChild(link);
 
         link.onclick = () => {
-            mpvCommand("playlist-play-index", [i]);
+            currentId = i;
             makeCurrent(link);
+            mpvCommand("playlist-play-index", [i]);
         };
     }
     document.body.appendChild(table);

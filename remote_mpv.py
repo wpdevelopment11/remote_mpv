@@ -25,9 +25,7 @@ ALLOWED_PROPERTIES = [
 ALLOWED_COMMANDS = [
     "add",
     "multiply",
-    "playlist-next",
     "playlist-play-index",
-    "playlist-prev",
     "seek",
 ]
 
