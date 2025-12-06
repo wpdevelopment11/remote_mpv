@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
 from http.server import ThreadingHTTPServer
@@ -7,10 +8,12 @@ import multiprocessing.connection
 import os
 import re
 import shutil
+import socket
 from urllib import parse as urlparse
 
-IPC_SOCKET = "mpvsocket"
 LISTEN = ("127.0.0.1", 7271)
+
+IPC_SOCKET = ("\\\\.\\pipe\\" if os.name == "nt" else "/tmp/") + "mpvsocket"
 STATIC_ROOT = "static"
 
 ALLOWED_PROPERTIES = [
@@ -108,6 +111,39 @@ class CmdRun(Route):
         resp = handler.mpv_command(["osd-msg-bar", cmdname, *args])
         handler.json_success(resp)
 
+class UnixSockConnection:
+
+    def __init__(self, path):
+        self._path = path
+        self._messages = []
+
+        self._client = socket.socket(socket.AF_UNIX)
+        self._client.connect(self._path)
+
+    def send_bytes(self, b):
+        self._client.send(b)
+
+    def recv_bytes(self):
+        if not self._messages:
+            client = self._client
+            buffer = bytearray()
+            while True:
+                recv = client.recv(16384)
+                if not recv:
+                    raise EOFError("Disconnected from mpv")
+                buffer.extend(recv)
+                if buffer[-1] == 10:
+                    break
+            self._messages = buffer.split(b"\n")[:-1]
+
+        return self._messages.pop(0)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return self._client.__exit__(exc_type, exc_value, traceback)
+
 class MpvRequestHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -131,8 +167,10 @@ class MpvRequestHandler(BaseHTTPRequestHandler):
                 method = self.command.lower()
                 if getattr(route, method, None):
                     try:
-                        mpv_conn = multiprocessing.connection.Client(self.server.mpv_sock_path)
-                    except FileNotFoundError as e:
+                        mpv_conn = (multiprocessing.connection.Client(self.server.mpv_sock_path)
+                                    if os.name == "nt"
+                                    else UnixSockConnection(self.server.mpv_sock_path))
+                    except (FileNotFoundError, ConnectionRefusedError) as e:
                         self.json_error(HTTPStatus.INTERNAL_SERVER_ERROR, "Can't connect to mpv ipc server")
                         return True
                     with mpv_conn:
@@ -235,7 +273,7 @@ class MpvServer(ThreadingHTTPServer):
 
 def main():
     try:
-        server = MpvServer("\\\\.\\pipe\\" + IPC_SOCKET,
+        server = MpvServer(IPC_SOCKET,
                            [PropGet(), PropSet(), CmdRun()],
                            LISTEN)
         server.serve_forever()
