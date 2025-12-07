@@ -136,5 +136,11 @@ async function loadPlaylist() {
     showPlaylist(playlist);
 }
 
+document.getElementById("volume-decr").onclick = () => mpvCommand('add', ['volume', -10]);
+document.getElementById("volume-incr").onclick = () => mpvCommand('add', ['volume', 10]);
+
+document.getElementById("speed-decr").onclick = () => mpvCommand('multiply', ['speed', 1/1.1]);
+document.getElementById("speed-incr").onclick = () => mpvCommand('multiply', ['speed', 1.1]);
+
 loadState();
 loadPlaylist();
