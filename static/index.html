@@ -24,13 +24,17 @@
         </div>
 
         <div class="container">
-            <button title="Seek Backward"><i class="fa-solid fa-backward"></i></button>
-            <button title="Seek Forward"><i class="fa-solid fa-forward"></i></button>
-
             <button id="speed-decr" title="Playback speed -"><i class="fa-solid fa-gauge-high fa-flip-horizontal"></i></button>
             <button id="speed-incr" title="Playback speed +"><i class="fa-solid fa-gauge-high"></i></button>
 
             <button id="mute"><i class="fa-solid fa-volume-xmark"></i></button>
+        </div>
+
+        <div class="container">
+            <button data-seek="-5" class="seek" title="Seek Backward 5 sec">-5sec</button>
+            <button data-seek="5" class="seek" title="Seek Forward 5 sec">+5sec</button>
+            <button data-seek="-60" class="seek" title="Seek Backward 1 min">-1min</button>
+            <button data-seek="60" class="seek" title="Seek Forward 1 min">+1min</button>
         </div>
 
         <div class="container volume">

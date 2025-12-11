@@ -142,5 +142,9 @@ document.getElementById("volume-incr").onclick = () => mpvCommand('add', ['volum
 document.getElementById("speed-decr").onclick = () => mpvCommand('multiply', ['speed', 1/1.1]);
 document.getElementById("speed-incr").onclick = () => mpvCommand('multiply', ['speed', 1.1]);
 
+document.querySelectorAll(".seek").forEach((el) => {
+    el.onclick = () => mpvCommand('seek', [parseFloat(el.getAttribute("data-seek"))])
+});
+
 loadState();
 loadPlaylist();
