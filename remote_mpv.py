@@ -16,27 +16,47 @@ LISTEN = ("127.0.0.1", 7271)
 IPC_SOCKET = ("\\\\.\\pipe\\" if os.name == "nt" else "/tmp/") + "mpvsocket"
 STATIC_ROOT = "static"
 
-ALLOWED_PROPERTIES = [
+ALLOWED_SET = (
+    "aid",
+    "sid",
+    "mute",
+    "pause",
+    "speed",
+    "volume",
+)
+
+ALLOWED_GET = (
+    "duration",
     "mute",
     "pause",
     "playlist",
     "speed",
-    "volume-max",
+    "time-pos",
+    "track-list",
     "volume",
-]
+    "volume-max",
+)
 
-ALLOWED_COMMANDS = [
+ALLOWED_COMMANDS = (
     "add",
     "multiply",
     "playlist-play-index",
     "seek",
-]
+)
+
+NO_EVENTS = (
+    "time-pos",
+)
 
 # Show changes on OSD
-OSD_PROPERTIES = ["mute", "volume"]
+OSD_PROPERTIES = (
+    "mute",
+    "volume",
+)
 
 class MpvError(Exception): pass
 class MpvNotAllowed(Exception): pass
+class MpvEventError(Exception): pass
 
 class Route:
     regex = None
@@ -60,8 +80,8 @@ class PropGet(Route):
         self.regex = self.path_getter_re()
 
     def get(self, handler, prop):
-        if prop not in ALLOWED_PROPERTIES:
-            raise MpvNotAllowed("Property '{}' is not allowed".format(prop))
+        if prop not in ALLOWED_GET:
+            raise MpvNotAllowed("Getting property '{}' is not allowed".format(prop))
         val = handler.mpv_command(["get_property", prop])
         result = {prop: val}
         handler.json_success(result)
@@ -78,8 +98,8 @@ class PropSet(Route):
             return
         prop = next(iter(inp_obj))
         val = inp_obj[prop]
-        if prop not in ALLOWED_PROPERTIES:
-            raise MpvNotAllowed("Property '{}' is not allowed".format(prop))
+        if prop not in ALLOWED_SET:
+            raise MpvNotAllowed("Setting property '{}' is not allowed".format(prop))
         if prop in OSD_PROPERTIES:
             cmd = ["osd-msg-bar", "set"]
             if isinstance(val, bool):
@@ -111,11 +131,36 @@ class CmdRun(Route):
         resp = handler.mpv_command(["osd-msg-bar", cmdname, *args])
         handler.json_success(resp)
 
+class EventsGet(Route):
+
+    def __init__(self):
+        super().__init__("event")
+        self.regex = self.path_setter_re()
+
+    def get(self, handler):
+        def observe_prop(prop):
+            return {"command": ["observe_property", 1, prop]}
+
+        observe_all_props = ("\n".join([json.dumps(observe_prop(prop))
+                                        for prop in ALLOWED_GET if prop not in NO_EVENTS]) + "\n").encode()
+        handler.mpv_conn.send_bytes(observe_all_props)
+
+        handler.send_response(HTTPStatus.OK)
+        handler.send_header("Content-Type", "application/json")
+        handler.end_headers()
+
+        try:
+            while True:
+                messages = handler.mpv_read()
+                for message in messages:
+                    handler.wfile.write(json.dumps(message).encode() + b"\n")
+        except Exception:
+            raise MpvEventError("Error while trying to fetch events from mpv")
+
 class UnixSockConnection:
 
     def __init__(self, path):
         self._path = path
-        self._messages = []
 
         self._client = socket.socket(socket.AF_UNIX)
         self._client.connect(self._path)
@@ -123,20 +168,17 @@ class UnixSockConnection:
     def send_bytes(self, b):
         self._client.send(b)
 
-    def recv_bytes(self):
-        if not self._messages:
-            client = self._client
-            buffer = bytearray()
-            while True:
-                recv = client.recv(16384)
-                if not recv:
-                    raise EOFError("Disconnected from mpv")
-                buffer.extend(recv)
-                if buffer[-1] == 10:
-                    break
-            self._messages = buffer.split(b"\n")[:-1]
-
-        return self._messages.pop(0)
+    def recv_messages(self):
+        client = self._client
+        buffer = bytearray()
+        while True:
+            recv = client.recv(16384)
+            if not recv:
+                raise EOFError("Disconnected from mpv")
+            buffer.extend(recv)
+            if buffer[-1] == 10:
+                break
+        return buffer.split(b"\n")[:-1]
 
     def __enter__(self):
         return self
@@ -252,17 +294,27 @@ class MpvRequestHandler(BaseHTTPRequestHandler):
         cmd = json.dumps({"command": command})
         self.mpv_conn.send_bytes(cmd.encode() + b"\n")
 
-        while True:
-            resp_bytes = self.mpv_conn.recv_bytes()
-            resp = json.loads(resp_bytes)
-            # Don't care about events
-            if "event" not in resp:
-                break
+        resp = self.mpv_read()
+        resp = resp[0]
+
+        if "event" in resp:
+            raise AssertionError("Command '{}' result is expected. But event '{}' is received"
+                                 .format(command, resp["event"]))
 
         if resp["error"] != "success":
             raise MpvError(resp["error"])
 
         return resp.get("data", resp["error"])
+
+    def mpv_read(self):
+        mpv_conn = self.mpv_conn
+        if os.name == "nt":
+            messages = [mpv_conn.recv_bytes()]
+            while self.mpv_conn.poll():
+                messages.append(mpv_conn.recv_bytes())
+        else:
+            messages = [json.loads(m) for m in mpv_conn.recv_messages()]
+        return messages
 
 class MpvServer(ThreadingHTTPServer):
 
@@ -274,7 +326,7 @@ class MpvServer(ThreadingHTTPServer):
 def main():
     try:
         server = MpvServer(IPC_SOCKET,
-                           [PropGet(), PropSet(), CmdRun()],
+                           [PropGet(), PropSet(), CmdRun(), EventsGet()],
                            LISTEN)
         server.serve_forever()
     except KeyboardInterrupt:

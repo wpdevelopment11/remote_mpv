@@ -8,7 +8,7 @@ async function send(path, obj) {
     });
     if (!resp.ok) {
         const data = await resp.json();
-        throw Error(data["error"]);
+        throw Error(data.error);
     }
 }
 
@@ -24,15 +24,68 @@ async function mpvGetProperty(prop) {
     const resp = await fetch(`/property/${prop}`);
     const data = await resp.json();
     if (!resp.ok) {
-        throw Error(data["error"]);
+        throw Error(data.error);
     }
     return data[prop];
 }
 
-function showPlaylist(playlist) {
+async function mpvEvent() {
+    const props = {
+        "duration": 0,
+        "mute": false,
+        "pause": false,
+        "playlist": [],
+        "time_pos": 0,
+        "track-list": [],
+        "volume": 100,
+        "volume-max": 130,
+    };
+
+    for (;;) {
+        try {
+            const resp = await fetch("/event");
+            if (!resp.ok) {
+                throw Error("Error while trying to get events");
+            }
+
+            const reader = resp.body.getReader();
+            let buff = [];
+            while (true) {
+                const res = await reader.read();
+                if (res.done) {
+                    throw Error("Unexpected EOF");
+                }
+                buff.push(...res.value)
+                if (res.value[res.value.length-1] == 10) {
+                    const decoder = new TextDecoder();
+                    let messages = decoder.decode(Uint8Array.from(buff));
+                    messages = messages.split("\n").slice(0, -1).map(message => JSON.parse(message));
+                    const events = [];
+                    for (const message of messages) {
+                        if (message.event == "property-change" && message.data != undefined) {
+                            props[message.name] = message.data;
+                        } else {
+                            events.push(message);
+                        }
+                    }
+                    updateState({props, events});
+
+                    buff = [];
+                }
+            }
+        } catch(e) {
+            console.log(e);
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+    }
+}
+
+function showPlaylist(state) {
+    const id = "playlist";
+    const playlist = state.props.playlist;
     const currentClass = "playlist-current"
-    const table = document.createElement("table");
-    table.id = "playlist";
+    const table = document.getElementById(id);
+    table.replaceChildren();
     let current = null;
     let currentId = -1;
 
@@ -96,44 +149,41 @@ function showPlaylist(playlist) {
             mpvCommand("playlist-play-index", [i]);
         };
     }
-    document.body.appendChild(table);
 }
 
-async function toggleButton(name, onClass, title) {
+function toggleButton(state, name, onClass, title) {
     function changeTitle(isOn) {
         button.title = isOn ? title[0] : title[1];
     }
-    const isOn = await mpvGetProperty(name);
+    const isOn = state.props[name];
     const button = document.getElementById(name);
     if (isOn) {
         button.classList.add(onClass);
+    } else {
+        button.classList.remove(onClass);
     }
     changeTitle(isOn);
     button.onclick = async () => {
         const isOn = button.classList.toggle(onClass);
-        await mpvSetProperty(name, isOn);
         changeTitle(isOn);
+        await mpvSetProperty(name, isOn);
     };
 }
 
-async function setupSlider(name, getMax) {
+function setupSlider(state, name, maxName) {
     const slider = document.getElementById(name);
-    slider.max = await getMax();
-    slider.value = await mpvGetProperty(name);
+    slider.value = state.props[name];
+    slider.max = state.props[maxName];
     slider.onchange = async () => {
         await mpvSetProperty(name, slider.value);
     }
 }
 
-async function loadState() {
-    await toggleButton("mute", "muted", ["Unmute", "Mute"]);
-    await toggleButton("pause", "paused", ["Play", "Pause"]);
-    await setupSlider("volume", async () => await mpvGetProperty("volume-max"))
-}
-
-async function loadPlaylist() {
-    const playlist = await mpvGetProperty("playlist");
-    showPlaylist(playlist);
+function updateState(state) {
+    toggleButton(state, "mute", "muted", ["Unmute", "Mute"]);
+    toggleButton(state, "pause", "paused", ["Play", "Pause"]);
+    showPlaylist(state);
+    setupSlider(state, "volume", "volume-max");
 }
 
 document.getElementById("volume-decr").onclick = () => mpvCommand('add', ['volume', -10]);
@@ -146,5 +196,4 @@ document.querySelectorAll(".seek").forEach((el) => {
     el.onclick = () => mpvCommand('seek', [parseFloat(el.getAttribute("data-seek"))])
 });
 
-loadState();
-loadPlaylist();
+mpvEvent();
