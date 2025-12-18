@@ -41,6 +41,23 @@ async function mpvEvent() {
         "volume-max": 130,
     };
 
+    (function update_time_pos() {
+        setTimeout(async () => {
+            let time_pos;
+            try {
+                time_pos = await mpvGetProperty("time-pos");
+            } catch(e) {
+                update_time_pos();
+                throw e;
+            }
+
+            props.time_pos = time_pos;
+            setupSeekBar({props, events: []});
+
+            update_time_pos();
+        }, 500);
+    })();
+
     for (;;) {
         try {
             const resp = await fetch("/event");
@@ -179,11 +196,22 @@ function setupSlider(state, name, maxName) {
     }
 }
 
+function setupSeekBar(state) {
+    const seekbar = document.getElementById("seek");
+    seekbar.value = state.props.time_pos;
+    seekbar.max = state.props.duration;
+    seekbar.oninput = async () => {
+        state.props.time_pos = seekbar.valueAsNumber;
+        await mpvCommand("seek", [seekbar.valueAsNumber, "absolute+exact"]);
+    }
+}
+
 function updateState(state) {
     toggleButton(state, "mute", "muted", ["Unmute", "Mute"]);
     toggleButton(state, "pause", "paused", ["Play", "Pause"]);
     showPlaylist(state);
     setupSlider(state, "volume", "volume-max");
+    setupSeekBar(state);
 }
 
 document.getElementById("volume-decr").onclick = () => mpvCommand("add", ["volume", -10]);
