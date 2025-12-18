@@ -186,14 +186,14 @@ function updateState(state) {
     setupSlider(state, "volume", "volume-max");
 }
 
-document.getElementById("volume-decr").onclick = () => mpvCommand('add', ['volume', -10]);
-document.getElementById("volume-incr").onclick = () => mpvCommand('add', ['volume', 10]);
+document.getElementById("volume-decr").onclick = () => mpvCommand("add", ["volume", -10]);
+document.getElementById("volume-incr").onclick = () => mpvCommand("add", ["volume", 10]);
 
-document.getElementById("speed-decr").onclick = () => mpvCommand('multiply', ['speed', 1/1.1]);
-document.getElementById("speed-incr").onclick = () => mpvCommand('multiply', ['speed', 1.1]);
+document.getElementById("speed-decr").onclick = () => mpvCommand("multiply", ["speed", 1/1.1]);
+document.getElementById("speed-incr").onclick = () => mpvCommand("multiply", ["speed", 1.1]);
 
 document.querySelectorAll(".seek").forEach((el) => {
-    el.onclick = () => mpvCommand('seek', [parseFloat(el.getAttribute("data-seek"))])
+    el.onclick = () => mpvCommand("seek", [parseFloat(el.getAttribute("data-seek"))])
 });
 
 mpvEvent();
