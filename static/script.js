@@ -168,6 +168,48 @@ function showPlaylist(state) {
     }
 }
 
+function showTracks(state, type) {
+    const id = `${type}-tracks`;
+    const select = document.getElementById(id);
+    select.replaceChildren();
+
+    select.onchange = async (event) => {
+        let option;
+        if (type == "audio") {
+            option = "aid";
+        } else if (type == "sub") {
+            option = "sid";
+        } else {
+            throw Error(`Unexpected track type: ${type}`);
+        }
+        await mpvSetProperty(option, event.target.value);
+    };
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "no";
+    const typeName = type == "sub" ? "subtitle" : type;
+    placeholder.text = `Select ${typeName} track:`;
+    placeholder.selected = true;
+    select.add(placeholder);
+
+    for (const track of state.props["track-list"]) {
+        if (track.type != type) continue;
+
+        const trackopt = document.createElement("option");
+        trackopt.value = track.id;
+
+        trackopt.text = `${track.id}:`;
+        trackopt.text += track.lang ? ` [${track.lang}]` : "";
+        trackopt.text += track.title ? ` ${track.title}` : " No title";
+
+        if (track.selected) {
+            trackopt.selected = true;
+            placeholder.selected = false;
+        }
+        select.add(trackopt);
+    }
+}
+
 function toggleButton(state, name, onClass, title) {
     function changeTitle(isOn) {
         button.title = isOn ? title[0] : title[1];
@@ -212,6 +254,8 @@ function updateState(state) {
     showPlaylist(state);
     setupSlider(state, "volume", "volume-max");
     setupSeekBar(state);
+    showTracks(state, "audio");
+    showTracks(state, "sub");
 }
 
 document.getElementById("volume-decr").onclick = () => mpvCommand("add", ["volume", -10]);
