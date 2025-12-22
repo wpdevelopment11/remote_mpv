@@ -112,6 +112,7 @@ function showPlaylist(state) {
         }
         current = link;
         current.classList.add(currentClass);
+        document.location.hash = current.hash;
     }
 
     const prev_button = document.getElementById("playlist-prev");
@@ -152,7 +153,8 @@ function showPlaylist(state) {
         const link = document.createElement("a");
         const title = item.title || item.filename;
         link.appendChild(document.createTextNode(title));
-        link.href = "#";
+        link.href = "";
+        link.hash = item.filename;
         if (item.current) {
             currentId = i;
             makeCurrent(link);

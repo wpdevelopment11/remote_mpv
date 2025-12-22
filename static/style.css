@@ -23,7 +23,27 @@ button, label {
 }
 
 #playlist a {
+    color: black;
     font-family: sans-serif;
+}
+
+#playlist a:visited {
+    color: grey;
+}
+
+@supports (-moz-appearance:none) {
+    #playlist a:visited {
+        color: black;
+    }
+}
+
+#playlist a:hover {
+    color: black;
+}
+
+#playlist a:active,
+#playlist a.playlist-current {
+    color: #9b009e;
 }
 
 #playlist tr td:first-child {
