@@ -36,6 +36,7 @@ async function mpvEvent() {
         "pause": false,
         "playlist": [],
         "time_pos": 0,
+        "playlistloaded": false,
         "track-list": [],
         "volume": 100,
         "volume-max": 130,
@@ -102,46 +103,36 @@ function showPlaylist(state) {
     const playlist = state.props.playlist;
     const currentClass = "playlist-current"
     const table = document.getElementById(id);
-    table.replaceChildren();
-    let current = null;
-    let currentId = -1;
+    let current;
+    let currentId;
 
-    function makeCurrent(link) {
-        if (current) {
+    if (!playlist.length) {
+        return;
+    }
+
+    function makeCurrent(id) {
             current.classList.remove(currentClass);
-        }
-        current = link;
+        current = links[id];
+        currentId = id;
         current.classList.add(currentClass);
         document.location.hash = current.hash;
     }
 
     const prev_button = document.getElementById("playlist-prev");
-    const next_button = document.getElementById("playlist-next");
-
     prev_button.onclick = () => {
-        if (!current) {
-            return;
-        }
-
-        const len = playlist.length;
-        const links = table.querySelectorAll("a");
-        currentId = (currentId + len - 1) % len;
-        makeCurrent(links[currentId]);
+        currentId = (currentId + playlist.length - 1) % playlist.length;
+        makeCurrent(currentId);
         mpvCommand("playlist-play-index", [currentId]);
     }
 
+    const next_button = document.getElementById("playlist-next");
     next_button.onclick = () => {
-        if (!current) {
-            return;
-        }
-
-        const len = playlist.length;
-        const links = table.querySelectorAll("a");
-        currentId = (currentId + 1) % len;
-        makeCurrent(links[currentId]);
+        currentId = (currentId + 1) % playlist.length;
+        makeCurrent(currentId);
         mpvCommand("playlist-play-index", [currentId]);
     }
 
+    table.replaceChildren();
     for (let i = 0; i < playlist.length; i++) {
         const item = playlist[i];
         const row = table.insertRow();
@@ -157,17 +148,36 @@ function showPlaylist(state) {
         link.hash = item.filename;
         if (item.current) {
             currentId = i;
-            makeCurrent(link);
+            current = link;
+            current.classList.add(currentClass);
         }
 
         title_cell.appendChild(link);
 
         link.onclick = () => {
-            currentId = i;
-            makeCurrent(link);
+            makeCurrent(i);
             mpvCommand("playlist-play-index", [i]);
         };
     }
+
+    const links = table.querySelectorAll("a");
+
+    const props = state.props;
+
+    if (!props.playlistloaded) {
+        const filename = decodeURI(document.location.hash).slice(1);
+        for (let i = 0; i < playlist.length; i++) {
+            const entry = playlist[i];
+            if (entry.filename == filename && i != currentId) {
+                makeCurrent(i);
+                mpvCommand("playlist-play-index", [currentId]);
+                break;
+            }
+        }
+    }
+
+    document.location.hash = current.hash;
+    props.playlistloaded = true;
 }
 
 function showTracks(state, type) {
