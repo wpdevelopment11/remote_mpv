@@ -35,8 +35,9 @@ async function mpvEvent() {
         "mute": false,
         "pause": false,
         "playlist": [],
-        "time_pos": 0,
         "playlistloaded": false,
+        "seekbardragged": false,
+        "time-pos": 0,
         "track-list": [],
         "volume": 100,
         "volume-max": 130,
@@ -44,17 +45,22 @@ async function mpvEvent() {
 
     (function update_time_pos() {
         setTimeout(async () => {
-            let time_pos;
+            let timepos;
             try {
-                time_pos = await mpvGetProperty("time-pos");
+                timepos = await mpvGetProperty("time-pos");
             } catch(e) {
                 update_time_pos();
+                if (e.message != "property unavailable") {
                 throw e;
+                } else {
+                    return;
+                }
             }
 
-            props.time_pos = time_pos;
+            if (!props.seekbardragged) {
+                props["time-pos"] = timepos;
             setupSeekBar({props, events: []});
-
+            }
             update_time_pos();
         }, 500);
     })();
@@ -252,12 +258,14 @@ function setupSlider(state, name, maxName) {
 
 function setupSeekBar(state) {
     const seekbar = document.getElementById("seek");
-    seekbar.value = state.props.time_pos;
+    seekbar.value = state.props["time-pos"];
     seekbar.max = state.props.duration;
     seekbar.oninput = async () => {
-        state.props.time_pos = seekbar.valueAsNumber;
+        state.props["time-pos"] = seekbar.valueAsNumber;
         await mpvCommand("seek", [seekbar.valueAsNumber, "absolute+exact"]);
     }
+    seekbar.onmousedown = () => {state.props.seekbardragged = true;}
+    seekbar.onmouseup = () => {state.props.seekbardragged = false;}
 }
 
 function updateState(state) {
@@ -265,7 +273,6 @@ function updateState(state) {
     toggleButton(state, "pause", "paused", ["Play", "Pause"]);
     showPlaylist(state);
     setupSlider(state, "volume", "volume-max");
-    setupSeekBar(state);
     showTracks(state, "audio");
     showTracks(state, "sub");
 }
