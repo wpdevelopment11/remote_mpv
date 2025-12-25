@@ -33,7 +33,7 @@ async function mpvEvent() {
     const props = {
         "duration": 0,
         "mute": false,
-        "pause": false,
+        "pause": true,
         "playlist": [],
         "playlistloaded": false,
         "seekbardragged": false,
@@ -65,6 +65,7 @@ async function mpvEvent() {
         }, 500);
     })();
 
+    updateState({props, "events": []});
     for (;;) {
         try {
             const resp = await fetch("/event");
