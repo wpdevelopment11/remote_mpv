@@ -281,6 +281,16 @@ function setupSeekBar(state) {
     seekbar.onmouseup = () => {state.props.seekbardragged = false;}
 }
 
+function updateIcon(state) {
+    const pause = state.props.pause;
+    const icon = document.getElementById("icon");
+    if (pause) {
+        icon.href = "icon.svg";
+    } else {
+        icon.href = "icon_playing.svg";
+    }
+}
+
 function updateState(state) {
     toggleButton(state, "mute", "muted", ["Unmute", "Mute"]);
     toggleButton(state, "pause", "paused", ["Play", "Pause"]);
@@ -288,6 +298,7 @@ function updateState(state) {
     setupSlider(state, "volume", "volume-max");
     showTracks(state, "audio");
     showTracks(state, "sub");
+    updateIcon(state);
 }
 
 document.getElementById("volume-decr").onclick = () => mpvCommand("add", ["volume", -10]);
