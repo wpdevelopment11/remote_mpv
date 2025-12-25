@@ -43,8 +43,14 @@ async function mpvEvent() {
         "volume-max": 130,
     };
 
+    let queryTimepos = false;
     (function update_time_pos() {
         setTimeout(async () => {
+            if (!queryTimepos) {
+                update_time_pos();
+                return;
+            }
+
             let timepos;
             try {
                 timepos = await mpvGetProperty("time-pos");
@@ -94,6 +100,10 @@ async function mpvEvent() {
                         }
                     }
                     updateState({props, events});
+
+                    if (props.playlist.length) {
+                        queryTimepos = true;
+                    }
 
                     buff = [];
                 }
