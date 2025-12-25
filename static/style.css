@@ -35,10 +35,12 @@ button, label {
     #playlist a:visited {
         color: black;
     }
-}
 
-#playlist a:hover {
-    color: black;
+    @media (prefers-color-scheme: dark) {
+        #playlist a:visited {
+            color: white;
+        }
+    }
 }
 
 #playlist a:active,
@@ -48,10 +50,6 @@ button, label {
 
 #playlist tr td:first-child {
     text-align: right;
-}
-
-#playlist .playlist-current {
-    color: red;
 }
 
 .container {
@@ -88,8 +86,30 @@ button, label {
     font-size: 13px;
 }
 
+input {
+    accent-color: #9b009e;
+}
+
 @media (min-width: 650px) {
     .container-vertical {
         max-width: 400px;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background: black;
+    }
+
+    #playlist a,
+    .volume,
+    td:first-child,
+    label,
+    p {
+        color: white;
+    }
+
+    #playlist a.playlist-current {
+        color: #e500e9;
     }
 }
