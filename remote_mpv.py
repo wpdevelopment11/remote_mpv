@@ -45,6 +45,8 @@ ALLOWED_COMMANDS = (
     "seek",
 )
 
+ALLOWED_EVENTS = ()
+
 NO_EVENTS = (
     "time-pos",
 )
@@ -153,8 +155,10 @@ class EventsGet(Route):
         try:
             while True:
                 messages = handler.mpv_read()
-                for message in messages:
-                    handler.wfile.write(json.dumps(message).encode() + b"\n")
+                for msg in messages:
+                    if "event" in msg and (msg["event"] == "property-change" and "data" in msg
+                                           or msg["event"] != "property-change" and msg["event"] in ALLOWED_EVENTS):
+                        handler.wfile.write(json.dumps(msg).encode() + b"\n")
         except Exception:
             raise MpvEventError("Error while trying to fetch events from mpv")
 
