@@ -39,6 +39,7 @@ ALLOWED_GET = (
 
 ALLOWED_COMMANDS = (
     "add",
+    "loadfile",
     "multiply",
     "playlist-play-index",
     "seek",

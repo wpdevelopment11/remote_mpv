@@ -21,16 +21,27 @@
             <button id="playlist-prev" title="Playlist Previous"><i class="fa-solid fa-chevron-left"></i></button>
             <button id="playlist-next" title="Playlist Next"><i class="fa-solid fa-chevron-right"></i></button>
 
-            <button id="volume-decr" title="Volume -"><i class="fa-solid fa-volume-low"></i></button>
-            <button id="volume-incr" title="Volume +"><i class="fa-solid fa-volume-high"></i></button>
+            <button id="speed-decr" title="Playback speed -"><i class="fa-solid fa-gauge-high fa-flip-horizontal"></i></button>
+            <button id="speed-incr" title="Playback speed +"><i class="fa-solid fa-gauge-high"></i></button>
         </div>
 
         <div class="container">
-            <button id="speed-decr" title="Playback speed -"><i class="fa-solid fa-gauge-high fa-flip-horizontal"></i></button>
-            <button id="speed-incr" title="Playback speed +"><i class="fa-solid fa-gauge-high"></i></button>
-
+            <button id="file-open" title="Open a file"><i class="fa-solid fa-folder"></i></button>
+            <button id="volume-decr" title="Volume -"><i class="fa-solid fa-volume-low"></i></button>
+            <button id="volume-incr" title="Volume +"><i class="fa-solid fa-volume-high"></i></button>
             <button id="mute"><i class="fa-solid fa-volume-xmark"></i></button>
         </div>
+
+        <form id="loadfile-form">
+            <div id="filename">
+                <input type="text" name="filename" placeholder="Absolute path to the file or URL" required/>
+                <div>
+                    <input type="checkbox" id="playlist-append" name="playlist_append"/>
+                    <label for="playlist-append">Append to the playlist</label>
+                </div>
+            </div>
+            <button>Open</button>
+        </form>
 
         <div class="container">
             <button data-seek="-10" class="seek" title="Seek Backward 10 sec">-10sec</button>

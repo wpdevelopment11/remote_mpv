@@ -52,6 +52,7 @@ button, label {
     text-align: right;
 }
 
+#loadfile-form.container,
 .container {
     display: flex;
     margin: 10px 0;
@@ -88,6 +89,37 @@ button, label {
 
 input {
     accent-color: #9b009e;
+}
+
+#filename {
+    flex: 9;
+    display: flex;
+    flex-direction: column;
+}
+
+#filename > div {
+    text-align: right;
+}
+
+#loadfile-form > button {
+    flex: 1;
+}
+
+#loadfile-form > button,
+#filename > input {
+    font-size: 14px;
+}
+
+#loadfile-form.container {
+    align-items: flex-start;
+}
+
+#playlist-append + label {
+    font-size: 16px;
+}
+
+#loadfile-form {
+    display: none;
 }
 
 @media (min-width: 650px) {

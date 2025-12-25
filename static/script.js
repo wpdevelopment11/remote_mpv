@@ -311,4 +311,25 @@ document.querySelectorAll(".seek").forEach((el) => {
     el.onclick = () => mpvCommand("seek", [parseFloat(el.getAttribute("data-seek"))])
 });
 
+document.getElementById("loadfile-form").onsubmit = async (event) => {
+    event.preventDefault();
+    const formdata = new FormData(event.target);
+    const name = formdata.get("filename");
+    const args = [name];
+    if (formdata.get("playlist_append") !== null) {
+        args.push("append-play")
+    }
+    await mpvCommand("loadfile", args);
+    event.target.reset();
+};
+
+document.getElementById("file-open").onclick = () => {
+    const form = document.getElementById("loadfile-form");
+    form.classList.toggle("container");
+
+    const icon = document.querySelector("#file-open i");
+    icon.classList.toggle("fa-folder");
+    icon.classList.toggle("fa-folder-open");
+};
+
 mpvEvent();
