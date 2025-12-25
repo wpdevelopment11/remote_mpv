@@ -51,7 +51,7 @@ async function mpvEvent() {
             } catch(e) {
                 update_time_pos();
                 if (e.message != "property unavailable") {
-                throw e;
+                    throw e;
                 } else {
                     return;
                 }
@@ -59,7 +59,7 @@ async function mpvEvent() {
 
             if (!props.seekbardragged) {
                 props["time-pos"] = timepos;
-            setupSeekBar({props, events: []});
+                setupSeekBar({props, events: []});
             }
             update_time_pos();
         }, 500);
@@ -118,7 +118,7 @@ function showPlaylist(state) {
     }
 
     function makeCurrent(id) {
-            current.classList.remove(currentClass);
+        current.classList.remove(currentClass);
         current = links[id];
         currentId = id;
         current.classList.add(currentClass);
@@ -212,7 +212,9 @@ function showTracks(state, type) {
     select.add(placeholder);
 
     for (const track of state.props["track-list"]) {
-        if (track.type != type) continue;
+        if (track.type != type) {
+            continue;
+        }
 
         const trackopt = document.createElement("option");
         trackopt.value = track.id;
