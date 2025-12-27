@@ -162,11 +162,34 @@ class EventsGet(Route):
         except Exception:
             raise MpvEventError("Error while trying to fetch events from mpv")
 
-class UnixSockConnection:
+class IpcConnection:
+    _client = None
 
     def __init__(self, path):
         self._path = path
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return self._client.__exit__(exc_type, exc_value, traceback)
+
+class NamedPipeConnection(IpcConnection):
+
+    def __init__(self, path):
+        super().__init__(path)
+        self._client = multiprocessing.connection.PipeClient(self._path)
+
+    def send_bytes(self, b):
+        self._client.send_bytes(b)
+
+    def recv_messages(self):
+        return [self._client.recv_bytes()]
+
+class UnixSockConnection(IpcConnection):
+
+    def __init__(self, path):
+        super().__init__(path)
         self._client = socket.socket(socket.AF_UNIX)
         self._client.connect(self._path)
 
@@ -184,12 +207,6 @@ class UnixSockConnection:
             if buffer[-1] == 10:
                 break
         return buffer.split(b"\n")[:-1]
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        return self._client.__exit__(exc_type, exc_value, traceback)
 
 class MpvRequestHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
@@ -214,7 +231,7 @@ class MpvRequestHandler(BaseHTTPRequestHandler):
                 method = self.command.lower()
                 if getattr(route, method, None):
                     try:
-                        mpv_conn = (multiprocessing.connection.Client(self.server.mpv_sock_path)
+                        mpv_conn = (NamedPipeConnection(self.server.mpv_sock_path)
                                     if os.name == "nt"
                                     else UnixSockConnection(self.server.mpv_sock_path))
                     except (FileNotFoundError, ConnectionRefusedError) as e:
@@ -312,14 +329,7 @@ class MpvRequestHandler(BaseHTTPRequestHandler):
         return resp.get("data", resp["error"])
 
     def mpv_read(self):
-        mpv_conn = self.mpv_conn
-        if os.name == "nt":
-            messages = [mpv_conn.recv_bytes()]
-            while self.mpv_conn.poll():
-                messages.append(mpv_conn.recv_bytes())
-        else:
-            messages = [json.loads(m) for m in mpv_conn.recv_messages()]
-        return messages
+        return [json.loads(m) for m in self.mpv_conn.recv_messages()]
 
 class MpvServer(ThreadingHTTPServer):
 
