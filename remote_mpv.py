@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import argparse
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
 from http.server import ThreadingHTTPServer
@@ -10,8 +11,6 @@ import re
 import shutil
 import socket
 from urllib import parse as urlparse
-
-LISTEN = ("127.0.0.1", 7271)
 
 IPC_SOCKET = ("\\\\.\\pipe\\" if os.name == "nt" else "/tmp/") + "mpvsocket"
 STATIC_ROOT = "static"
@@ -338,11 +337,22 @@ class MpvServer(ThreadingHTTPServer):
         self.routes = routes
         super().__init__(address, MpvRequestHandler)
 
+def get_parser():
+    parser = argparse.ArgumentParser(description="HTTP server that allows you to control mpv using a web browser or curl")
+    parser.add_argument("-a", "--address", help="Specify 0.0.0.0 to listen on all interfaces", default="127.0.0.1")
+    parser.add_argument("-p", "--port", default=7271, type=int)
+    parser.add_argument("--ipc-path", help="It must be created by mpv. See: https://mpv.io/manual/master/#options-input-ipc-server", default=IPC_SOCKET)
+    return parser
+
 def main():
+    parser = get_parser()
+    args = parser.parse_args()
+
     try:
-        server = MpvServer(IPC_SOCKET,
+        server = MpvServer(args.ipc_path,
                            [PropGet(), PropSet(), CmdRun(), EventsGet()],
-                           LISTEN)
+                           (args.address, args.port))
+        print("Starting the server...\n\n\tOpen http://{}:{} in your browser to access the web UI.\n".format(args.address, args.port))
         server.serve_forever()
     except KeyboardInterrupt:
         pass
