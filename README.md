@@ -2,6 +2,10 @@
 
 This project allows you to control mpv running on the same or on a different machine using a web browser.
 
+<p align="center">
+    <img src="screenshot.png" alt="screenshot of the browser UI" />
+</p>
+
 `remote_mpv.py` is a web server that needs to be started on the same machine as mpv itself.
 Once started, it can be accessed using any device on a local network to control mpv.
 
