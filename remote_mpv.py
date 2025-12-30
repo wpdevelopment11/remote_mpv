@@ -13,7 +13,9 @@ import socket
 from urllib import parse as urlparse
 
 IPC_SOCKET = ("\\\\.\\pipe\\" if os.name == "nt" else "/tmp/") + "mpvsocket"
-STATIC_ROOT = "static"
+
+THIS_DIR = os.path.realpath(os.path.dirname(__file__))
+STATIC_DIR = os.path.join(THIS_DIR, "static")
 
 ALLOWED_SET = (
     "aid",
@@ -215,7 +217,7 @@ class MpvRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse.unquote(self.path)
         if not self.find_route(path):
-            return self.serve_static_file(STATIC_ROOT, path)
+            return self.serve_static_file(STATIC_DIR, path)
 
     def do_POST(self):
         path = urlparse.unquote(self.path)
@@ -283,7 +285,7 @@ class MpvRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(resp)
 
-    def serve_static_file(self, root=STATIC_ROOT, path=None):
+    def serve_static_file(self, root=STATIC_DIR, path=None):
         if path is None:
             path = urlparse.unquote(self.path)
         root = os.path.join(os.path.abspath(root), '')
