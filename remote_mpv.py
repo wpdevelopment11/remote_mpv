@@ -340,9 +340,11 @@ class MpvServer(ThreadingHTTPServer):
         super().__init__(address, MpvRequestHandler)
 
 def get_parser():
-    parser = argparse.ArgumentParser(description="HTTP server that allows you to control mpv using a web browser or curl")
+    parser = argparse.ArgumentParser(
+        description="HTTP server that allows you to control mpv using a web browser or curl",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-a", "--address", help="Specify 0.0.0.0 to listen on all interfaces", default="127.0.0.1")
-    parser.add_argument("-p", "--port", default=7271, type=int)
+    parser.add_argument("-p", "--port", help="Port on which to listen", default=7271, type=int)
     parser.add_argument("--ipc-path", help="It must be created by mpv. See: https://mpv.io/manual/master/#options-input-ipc-server", default=IPC_SOCKET)
     return parser
 
