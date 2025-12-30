@@ -52,6 +52,8 @@ python3 remote_mpv.py --ipc-path /tmp/mpvsocket --address 0.0.0.0
 
 ## Watch a demo
 
+<video src="https://github.com/user-attachments/assets/b73d90f8-b0b9-4b17-9062-fd5b6b11d90d"></video>
+
 ## Using in combination with umpv
 
 You probably want to have a single mpv instance running at the same time.
