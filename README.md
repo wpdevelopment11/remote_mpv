@@ -105,6 +105,12 @@ To pause playback, run:
 curl --json '{"pause": true}' http://127.0.0.1:7271/property
 ```
 
+To get the current value of a property:
+
+```bash
+curl http://127.0.0.1:7271/property/pause
+```
+
 Switch to the second playlist entry:
 
 ```bash
