@@ -96,6 +96,8 @@ You need to add the [`input-ipc-server`] option, which will be used to send comm
    ```
    --input-ipc-server=/home/<user>/mpvsocket
    ```
+   
+   ![SMPlayer Preferences](https://github.com/user-attachments/assets/f6e11485-b729-4e95-af0d-f415a26f6bd0)
 
 2. Make sure to open a video file for testing purposes.
 
