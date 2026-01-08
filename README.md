@@ -81,6 +81,39 @@ python umpv <file>
 python remote_mpv.py --ipc-path \\.\pipe\umpv
 ```
 
+## Using with SMPlayer
+
+If you are using [SMPlayer], instead of mpv directly, you still can control
+your media player using a browser.
+
+You need to adjust the options that are passed to mpv by SMPlayer when starting it.
+You need to add the [`input-ipc-server`] option, which will be used to send commands to mpv.
+
+1. Open the SMPlayer _Preferences_ by pressing <kbd>Ctrl+P</kbd>. Go to _Advanced_ → _mpv_ and edit the _Options_ field by adding the `input-ipc-server` option:
+
+   > Replace `<user>` with your username.
+
+   ```
+   --input-ipc-server=/home/<user>/mpvsocket
+   ```
+
+2. Make sure to open a video file for testing purposes.
+
+3. You need to start `remote_mpv.py` by passing the same IPC path that you added to SMPlayer settings:
+
+   > Run the command below only in a trusted network. The server will be accessible over LAN.
+
+   ```
+   python3 remote_mpv.py --ipc-path /home/<user>/mpvsocket --address 0.0.0.0
+   ```
+
+Now, you can open the link that is printed in your terminal to control SMPlayer on this or another device in the same local network.
+
+You can try to configure the other [GUI frontends] in a similar way.
+
+[GUI frontends]: https://github.com/mpv-player/mpv/wiki/Applications-using-mpv#gui-frontends
+[SMPlayer]: https://www.smplayer.info
+
 ## Comparison with simple-mpv-webui
 
 In contrast to [_simple-mpv-webui_] the UI is usable on PC, not just on phone.
