@@ -1,4 +1,4 @@
-# remote_mpv.py - Control mpv using a web browser
+# Control mpv using a web browser
 
 This project allows you to control mpv running on the same or on a different machine using a web browser.
 
