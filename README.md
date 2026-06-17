@@ -2,8 +2,18 @@
 
 This project allows you to control mpv running on the same or on a different machine using a web browser.
 
+## Screenshot
+
+<p align="center">Light theme:</p>
+
 <p align="center">
-    <img src="screenshot.png" alt="screenshot of the browser UI" />
+    <img src="screenshot_light.png" alt="screenshot of the browser UI (light theme)" />
+</p>
+
+<p align="center">Dark theme:</p>
+
+<p align="center">
+    <img src="screenshot_dark.png" alt="screenshot of the browser UI (dark theme)" />
 </p>
 
 `remote_mpv.py` is a web server that needs to be started on the same machine as mpv itself.
