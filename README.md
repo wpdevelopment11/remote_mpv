@@ -7,15 +7,15 @@ This project allows you to control mpv running on the same or on a different mac
 </p>
 
 `remote_mpv.py` is a web server that needs to be started on the same machine as mpv itself.
-Once started, it can be accessed using any device on a local network to control mpv.
+Once started, it can be accessed from any device on a local network to control mpv.
 
-It's tested to work on Linux and Windows.
+It has been tested on Linux and Windows.
 
 ## Getting started
 
-You need to start mpv with an option [`input-ipc-server`].
-It's used for communication with mpv and is needed to be able to control it.
-For example, on Linux start mpv as follows:
+You need to start mpv with the [`input-ipc-server`] option.
+It is used for communication with mpv and is required to control it.
+For example, on Linux, start mpv as follows:
 
 > On Windows, replace `/tmp/mpvsocket` with `\\.\pipe\mpvsocket`.
 
@@ -31,7 +31,7 @@ You probably have Python installed. If not, [install it](https://www.python.org/
 
 If your python executable is named `python3`, you can run the web server using the following command:
 
-> The same path that you passed to [`input-ipc-server`] option, when started mpv, needs to be passed as `--ipc-path` to `remote_mpv.py`.
+> The same path that you passed to the [`input-ipc-server`] option when starting mpv must be passed to `remote_mpv.py` as `--ipc-path`.
 >
 > If the path is not provided, the default one will be used. Run `python3 remote_mpv.py -h` to check the default.
 
@@ -39,12 +39,12 @@ If your python executable is named `python3`, you can run the web server using t
 python3 remote_mpv.py --ipc-path /tmp/mpvsocket
 ```
 
-Now, the web server is running. The URL that you need to open in a browser to control mpv, will be printed to your terminal.
-By default, it can be accessed only on localhost, i.e. on the same machine where it's started. To prevent accidental exposure in an untrusted network.
+The web server is now running. The URL that you need to open in a browser to control mpv will be printed to your terminal.
+By default, it can only be accessed from localhost, that is the same machine on which it is running. This prevents accidental exposure on an untrusted network.
 
 To listen on all interfaces, run the following command:
 
-> Make sure to **run it only in trusted network**.
+> Make sure to **run it only on a trusted network**.
 
 ```bash
 python3 remote_mpv.py --ipc-path /tmp/mpvsocket --address 0.0.0.0
@@ -58,9 +58,9 @@ python3 remote_mpv.py --ipc-path /tmp/mpvsocket --address 0.0.0.0
 
 You probably want to have a single mpv instance running at the same time.
 Otherwise, multiple mpv instances will try to bind to the same socket, which will cause errors.
-[`umpv`] allows you to do just that.
+[`umpv`] allows you to do exactly that.
 
-If you want to use `umpv` together with this project, you need to pass the same ipc path to `remote_mpv.py`, that used internally by `umpv`.
+If you want to use `umpv` together with this project, you need to pass the same IPC path to `remote_mpv.py` that used internally by `umpv`.
 
 For example, on Linux you can use `umpv` as follows:
 
@@ -83,10 +83,10 @@ python remote_mpv.py --ipc-path \\.\pipe\umpv
 
 ## Using with SMPlayer
 
-If you are using [SMPlayer], instead of mpv directly, you still can control
+If you are using [SMPlayer] instead of mpv directly, you still can control
 your media player using a browser.
 
-You need to adjust the options that are passed to mpv by SMPlayer when starting it.
+You need to adjust the options that SMPlayer passes to mpv when starting it.
 You need to add the [`input-ipc-server`] option, which will be used to send commands to mpv.
 
 1. Open the SMPlayer _Preferences_ by pressing <kbd>Ctrl+P</kbd>. Go to _Advanced_ → _mpv_ and edit the _Options_ field by adding the `input-ipc-server` option:
@@ -109,7 +109,7 @@ You need to add the [`input-ipc-server`] option, which will be used to send comm
    python3 remote_mpv.py --ipc-path /home/<user>/mpvsocket --address 0.0.0.0
    ```
 
-Now, you can open the link that is printed in your terminal to control SMPlayer on this or another device in the same local network.
+You can now open the link printed in your terminal to control SMPlayer from this device or another device on the same local network.
 
 You can try to configure the other [GUI frontends] in a similar way.
 
@@ -118,12 +118,12 @@ You can try to configure the other [GUI frontends] in a similar way.
 
 ## Comparison with simple-mpv-webui
 
-In contrast to [_simple-mpv-webui_] the UI is usable on PC, not just on phone.
-Additionally, you don't need to mess with luasocket, which is native dependency and may not be available depending on which mpv build you are using.
+In contrast to [_simple-mpv-webui_], the UI is usable on a PC, not just on a phone.
+Additionally, you do not need to deal with LuaSocket, which is a native dependency and may not be available depending on the mpv build you are using.
 
-There are less features than in _simple-mpv-webui_ for sure.
+There are fewer features than in _simple-mpv-webui_.
 I only added things that I find useful. [Watch a demo](#watch-a-demo) to see what is available.
-If some feature is missing, keep using _simple-mpv-webui_ or send me PR to add it.
+If a feature is missing, keep using _simple-mpv-webui_ or send me a PR to add it.
 
 [`input-ipc-server`]: https://mpv.io/manual/stable/#options-input-ipc-server
 [_simple-mpv-webui_]: https://github.com/open-dynaMIX/simple-mpv-webui
@@ -132,7 +132,7 @@ If some feature is missing, keep using _simple-mpv-webui_ or send me PR to add i
 ## Using with curl
 
 You can send JSON requests to the server started by `remote_mpv.py` using `curl`.
-Which can be sometimes useful. See examples below.
+This can sometimes be useful. See examples below.
 
 To pause playback, run:
 
